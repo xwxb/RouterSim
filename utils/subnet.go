@@ -1,4 +1,4 @@
-package interfaces
+package utils
 
 import (
 	"github.com/xwxb/routersim/consts"

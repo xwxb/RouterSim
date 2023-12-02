@@ -23,3 +23,5 @@ func (router *Router) InsertARPTable(ipAddress, macAddress string) {
 func (router *Router) InsertRoutingTable(destinationIP, nextHop string) {
 	router.RoutingTable[destinationIP] = nextHop
 }
+
+//
