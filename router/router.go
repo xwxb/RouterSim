@@ -1,27 +1,41 @@
 package router
 
+import (
+	"github.com/xwxb/routersim/consts"
+	"github.com/xwxb/routersim/utils"
+)
+
 type Router struct {
-	MACAddress   string
-	IPAddress    string
-	ARPTable     map[string]string // ARP缓存表
-	RoutingTable map[string]string // 路由表
+	Type consts.NodeType
+	utils.NetDeviceBase
 }
 
 func NewRouter(macAddress, ipAddress string) *Router {
 	return &Router{
-		MACAddress:   macAddress,
-		IPAddress:    ipAddress,
-		ARPTable:     make(map[string]string),
-		RoutingTable: make(map[string]string),
+		Type: consts.RouterType,
+		NetDeviceBase: utils.NetDeviceBase{
+			NetDeviceAddrs: utils.NetDeviceAddrs{
+				IPAddress:  consts.IPAddress(ipAddress),
+				MACAddress: consts.MACAddress(macAddress),
+			},
+		},
 	}
 }
 
-func (router *Router) InsertARPTable(ipAddress, macAddress string) {
-	router.ARPTable[ipAddress] = macAddress
+func (r Router) Start() {
+	for {
+		select {
+		case _ = <-utils.HostToRouterArpChan:
+			arpResponsePacket := r.CreateArpResponsePacket()
+			utils.RouterToHostArpChan <- arpResponsePacket
+		}
+	}
 }
 
-func (router *Router) InsertRoutingTable(destinationIP, nextHop string) {
-	router.RoutingTable[destinationIP] = nextHop
-}
-
+//func (router *Router) InsertARPTable(ipAddress, macAddress string) {
+//	router.ARPTable[ipAddress] = macAddress
+//}
 //
+//func (router *Router) InsertRoutingTable(destinationIP, nextHop string) {
+//	router.RoutingTable[destinationIP] = nextHop
+//}

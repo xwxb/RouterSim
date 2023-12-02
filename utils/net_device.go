@@ -4,6 +4,7 @@ import "github.com/xwxb/routersim/consts"
 
 type NetDevice interface {
 	GetNextHop(consts.IPAddress) consts.IPAddress
+	CreateArpResponsePacket() consts.ArpResponsePacket
 }
 
 type NetDeviceAddrs struct {
@@ -25,6 +26,16 @@ func (n *NetDeviceBase) GetNextHop(ipAddress consts.IPAddress) (next consts.IPAd
 			return
 		}
 	}
-
 	return
+}
+
+func (n *NetDeviceBase) CreateArpResponsePacket() consts.ArpResponsePacket {
+	return consts.ArpResponsePacket{
+		MACAddress: n.MACAddress,
+	}
+}
+
+// 构造 ARP 请求报文
+func (n *NetDeviceBase) CreateARPRequestPacket() consts.ArpRequestPacket {
+	return consts.ArpRequestPacket{}
 }

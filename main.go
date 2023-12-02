@@ -19,7 +19,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		routerStart(router)
+		router.Start()
 	}()
 
 	// 创建主机节点A
@@ -27,7 +27,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		hostStart(hostA, router)
+		hostA.Start()
 	}()
 
 	// 创建主机节点B
@@ -35,14 +35,9 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		hostStart(hostB, router)
+		hostB.Start()
 	}()
 
 	// 等待所有goroutine完成
 	wg.Wait()
-}
-
-// 路由器启动逻辑
-func routerStart(router *Router) {
-	// 模拟路由器的其他启动逻辑...
 }
