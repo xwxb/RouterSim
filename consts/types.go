@@ -1,7 +1,5 @@
 package consts
 
-import "github.com/xwxb/routersim/utils"
-
 type MACAddress string
 type IPAddress string
 
@@ -16,4 +14,4 @@ const (
 	RouterType = "router"
 )
 
-type RouteTable map[utils.SubnetInfo]IPAddress
+type RouteTable map[SubnetInfo]IPAddress

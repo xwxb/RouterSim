@@ -18,11 +18,13 @@ func NewRouter(macAddress, ipAddress string) *Router {
 				IPAddress:  consts.IPAddress(ipAddress),
 				MACAddress: consts.MACAddress(macAddress),
 			},
+			ArpTable:   make(consts.ArpTable),
+			RouteTable: map[consts.SubnetInfo]consts.IPAddress{},
 		},
 	}
 }
 
-func (r Router) Start() {
+func (r *Router) Start() {
 	for {
 		select {
 		case _ = <-utils.HostToRouterArpChan:

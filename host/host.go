@@ -4,6 +4,7 @@ import (
 	"github.com/xwxb/routersim/consts"
 	"github.com/xwxb/routersim/utils"
 	"log"
+	"time"
 )
 
 // 定义主机结构体
@@ -20,6 +21,8 @@ func NewHost(macAddress, ipAddress string) *Host {
 				IPAddress:  consts.IPAddress(ipAddress),
 				MACAddress: consts.MACAddress(macAddress),
 			},
+			ArpTable:   make(consts.ArpTable),
+			RouteTable: map[consts.SubnetInfo]consts.IPAddress{},
 		},
 	}
 }
@@ -29,27 +32,38 @@ func (h *Host) Start() {
 	log.Println("Host Start")
 	log.Println("Start to Find ARP Cache, curr table: ", h.ArpTable)
 	destMAC, ok := h.ArpTable[consts.Host2IPAddress]
+
 	if !ok {
 		// 如果没有，则通过 ARP 协议获取目标主机的 MAC 地址
 		log.Println("No ARP Cache, Start to Get ARP Resp")
+
 		// 通过 ARP 协议获取目标主机的 MAC 地址
 		arpRequestPacket := h.CreateARPRequestPacket() // 构造 ARP 请求报文
 		h.broadcastARPRequestPacket(arpRequestPacket)  // 广播 ARP 请求报文
 
+		// 接收 ARP 响应报文
 		resp := <-utils.RouterToHostArpChan
-		destMAC = resp.MACAddress
-		log.Println("Get ARP Resp, MAC Address:", destMAC)
+		respMAC := resp.MACAddress
+		log.Println("Get ARP Resp, MAC Address:", respMAC)
 
 		// 更新自己的 ARP 缓存
-		log.Println("Update ARP Cache using", consts.Host2IPAddress, "and", destMAC, "to update ARP Cache")
-		h.ArpTable[consts.Host2IPAddress] = destMAC
+		log.Println("Update ARP Cache using", consts.Host2IPAddress, "and", respMAC, "to update ARP Cache")
+		if h.ArpTable == nil {
+			h.ArpTable = make(consts.ArpTable)
+		}
+		h.ArpTable[consts.Host2IPAddress] = resp.MACAddress
+
+		// 更新目标主机的 MAC 地址
+		destMAC = respMAC
 	}
 
-	//// 循环每隔 10s 构造、封装、发送一个随机的 IPv4 数据包
-	//// 首先随机生成一个字符串作为 payload
-	//pl := utils.GetRandStr(10)
-	//packet := h.createIPv4Packet(consts.Host2IPAddress, pl)
-	//frame := h.createEthernetFrame(consts.Host2MACAddress, packet.String())
+	// 循环每隔 10s 构造、封装、发送一个随机的 IPv4 数据包
+	for range time.Tick(10 * time.Second) {
+		// 首先随机生成一个字符串作为 payload
+		pl := utils.GetRandStr(10)
+		packet := h.createIPv4Packet(consts.Host2IPAddress, pl)
+		frame := h.createEthernetFrame(consts.Host2MACAddress, packet.String())
+	}
 
 }
 
