@@ -2,24 +2,25 @@ package router
 
 import (
 	"github.com/xwxb/routersim/consts"
+	"github.com/xwxb/routersim/netdev"
 	"github.com/xwxb/routersim/utils"
 )
 
 type Router struct {
 	Type consts.NodeType
-	utils.NetDeviceBase
+	netdev.NetDeviceBase
 }
 
 func NewRouter(macAddress, ipAddress string) *Router {
 	return &Router{
 		Type: consts.RouterType,
-		NetDeviceBase: utils.NetDeviceBase{
-			NetDeviceAddrs: utils.NetDeviceAddrs{
+		NetDeviceBase: netdev.NetDeviceBase{
+			NetDeviceAddrs: netdev.NetDeviceAddrs{
 				IPAddress:  consts.IPAddress(ipAddress),
 				MACAddress: consts.MACAddress(macAddress),
 			},
-			ArpTable:   make(consts.ArpTable),
-			RouteTable: map[consts.SubnetInfo]consts.IPAddress{},
+			ArpTable:   make(netdev.ArpTable),
+			RouteTable: map[netdev.SubnetInfo]consts.IPAddress{},
 		},
 	}
 }

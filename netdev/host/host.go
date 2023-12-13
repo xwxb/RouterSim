@@ -2,6 +2,7 @@ package host
 
 import (
 	"github.com/xwxb/routersim/consts"
+	"github.com/xwxb/routersim/netdev"
 	"github.com/xwxb/routersim/utils"
 	"log"
 	"time"
@@ -9,20 +10,20 @@ import (
 
 // 定义主机结构体
 type Host struct {
-	Type                consts.NodeType
-	utils.NetDeviceBase // 路由表
+	Type                 consts.NodeType
+	netdev.NetDeviceBase // 路由表
 }
 
 func NewHost(macAddress, ipAddress string) *Host {
 	return &Host{
 		Type: consts.HostType,
-		NetDeviceBase: utils.NetDeviceBase{
-			NetDeviceAddrs: utils.NetDeviceAddrs{
+		NetDeviceBase: netdev.NetDeviceBase{
+			NetDeviceAddrs: netdev.NetDeviceAddrs{
 				IPAddress:  consts.IPAddress(ipAddress),
 				MACAddress: consts.MACAddress(macAddress),
 			},
-			ArpTable:   make(consts.ArpTable),
-			RouteTable: map[consts.SubnetInfo]consts.IPAddress{},
+			ArpTable:   make(netdev.ArpTable),
+			RouteTable: map[netdev.SubnetInfo]consts.IPAddress{},
 		},
 	}
 }
@@ -49,7 +50,7 @@ func (h *Host) Start() {
 		// 更新自己的 ARP 缓存
 		log.Println("Update ARP Cache using", consts.Host2IPAddress, "and", respMAC, "to update ARP Cache")
 		if h.ArpTable == nil {
-			h.ArpTable = make(consts.ArpTable)
+			h.ArpTable = make(netdev.ArpTable)
 		}
 		h.ArpTable[consts.Host2IPAddress] = resp.MACAddress
 
@@ -68,7 +69,7 @@ func (h *Host) Start() {
 }
 
 // 广播 ARP 请求报文
-func (h *Host) broadcastARPRequestPacket(arpRequestPacket consts.ArpRequestPacket) {
+func (h *Host) broadcastARPRequestPacket(arpRequestPacket netdev.ArpRequestPacket) {
 	// 广播 ARP 请求报文，这里只是模拟，实际上是通过以太网发送
 	// 通过 channel 发送请求到其他所有 goroutine，如果节点类型是 Router 则往回发送 ARP 响应报文，包含自己的 MAC 地址
 	utils.HostToRouterArpChan <- arpRequestPacket

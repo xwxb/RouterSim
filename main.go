@@ -2,10 +2,9 @@ package main
 
 import (
 	"github.com/xwxb/routersim/consts"
+	"github.com/xwxb/routersim/netdev/host"
+	"github.com/xwxb/routersim/netdev/router"
 	"sync"
-
-	"github.com/xwxb/routersim/host"
-	"github.com/xwxb/routersim/router"
 )
 
 func main() {

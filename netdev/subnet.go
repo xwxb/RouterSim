@@ -1,16 +1,17 @@
-package consts
+package netdev
 
 import (
+	"github.com/xwxb/routersim/consts"
 	"net"
 )
 
 type SubnetInfo struct {
-	IPAddress
-	SubNetMask
+	consts.IPAddress
+	consts.SubNetMask
 }
 
 // 这里相当于直接套了一层底层的子网实现了。。
-func (s *SubnetInfo) Contains(ipAddress IPAddress) (ok bool) {
+func (s *SubnetInfo) Contains(ipAddress consts.IPAddress) (ok bool) {
 	_, subnet, _ := net.ParseCIDR(string(s.IPAddress) + "/" + string(s.SubNetMask))
 	ip := net.ParseIP(string(ipAddress))
 	return subnet.Contains(ip)
