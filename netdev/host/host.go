@@ -74,3 +74,5 @@ func (h *Host) broadcastARPRequestPacket(arpRequestPacket netdev.ArpRequestPacke
 	// 通过 channel 发送请求到其他所有 goroutine，如果节点类型是 Router 则往回发送 ARP 响应报文，包含自己的 MAC 地址
 	utils.HostToRouterArpChan <- arpRequestPacket
 }
+
+//

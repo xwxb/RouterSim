@@ -37,5 +37,7 @@ func (n *NetDeviceBase) CreateArpResponsePacket() ArpResponsePacket {
 
 // 构造 ARP 请求报文
 func (n *NetDeviceBase) CreateARPRequestPacket() ArpRequestPacket {
-	return ArpRequestPacket{}
+	return ArpRequestPacket{
+		MACAddress: consts.BroadcastMACAddress,
+	}
 }

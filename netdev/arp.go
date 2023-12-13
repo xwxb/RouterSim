@@ -3,6 +3,7 @@ package netdev
 import "github.com/xwxb/routersim/consts"
 
 type ArpRequestPacket struct {
+	consts.MACAddress
 }
 
 type ArpResponsePacket struct {
