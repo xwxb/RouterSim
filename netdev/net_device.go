@@ -40,6 +40,6 @@ func (n *NetDeviceBase) CreateARPRequestPacket(destIPAddress consts.IPAddress) A
 	return ArpRequestPacket{
 		IPAddress:  n.IPAddress,
 		MACAddress: n.MACAddress,
-		destIP:     destIPAddress,
+		DestIP:     destIPAddress,
 	}
 }

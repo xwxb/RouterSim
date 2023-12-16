@@ -27,21 +27,30 @@ func NewRouter(macAddress, ipAddress string) *Router {
 	}
 }
 
+// TODO 考虑抽象到 netdev 接口层
 func (r *Router) Start() {
 	for {
 		select {
 		case eFrame := <-utils.Host1ToRouterEFChan:
-			log.Println("Router received ethernet frame from host1")
+			if eFrame.PayloadType == consts.ARPType {
+				log.Println("Router received ethernet frame from host1")
 
-			var arpPacket netdev.ArpRequestPacket
-			err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
-			if err != nil {
-				log.Fatal(err)
-				return
+				var arpPacket netdev.ArpRequestPacket
+				err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
+				if err != nil {
+					log.Fatal(err)
+					return
+				}
+
+				if arpPacket.DestIP == r.IPAddress {
+					// 这里路由器发现不是发给自己的，继续广播。广播此处不做实现，直接发给主机2
+					log.Println("dest ip is not router ip, continue broadcast")
+					inChan, _ := utils.GetInAndOutChan(consts.RouterIPAddress, consts.Host2IPAddress)
+					inChan <- eFrame
+				}
 			}
-
-			arpResponsePacket := r.CreateArpResponsePacket()
-			utils.RouterToHost1EFChan <- arpResponsePacket
+		default:
+			log.Fatal("Router received unknown ethernet frame")
 		}
 	}
 }

@@ -3,6 +3,7 @@ package host
 import (
 	"encoding/json"
 	"github.com/xwxb/routersim/consts"
+	"github.com/xwxb/routersim/netdev"
 	"log"
 )
 
@@ -10,7 +11,9 @@ import (
 type EthernetFrame struct {
 	SourceMAC      consts.MACAddress
 	DestinationMAC consts.MACAddress
-	PayloadBytes   []byte
+	// ? 我理解应该实际实现应该式有一个这样的标志位的，有时间看看，暂时这样实现
+	PayloadType  consts.NetworkProtocolType
+	PayloadBytes []byte
 }
 
 // 构造以太网帧的方法
@@ -20,9 +23,19 @@ func (h *Host) createEthernetFrame(destinationMAC consts.MACAddress, payload any
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var typ consts.NetworkProtocolType
+	switch payload.(type) {
+	case netdev.ArpRequestPacket:
+		typ = consts.ARPType
+	case IPv4Packet:
+		typ = consts.IPv4Type
+	}
+
 	return &EthernetFrame{
 		SourceMAC:      h.MACAddress,
 		DestinationMAC: destinationMAC,
+		PayloadType:    typ,
 		PayloadBytes:   b,
 	}
 }

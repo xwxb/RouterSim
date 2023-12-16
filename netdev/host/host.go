@@ -1,6 +1,7 @@
 package host
 
 import (
+	"encoding/json"
 	"github.com/xwxb/routersim/consts"
 	"github.com/xwxb/routersim/netdev"
 	"github.com/xwxb/routersim/utils"
@@ -31,7 +32,20 @@ func (h *Host) Start() {
 	// 首先检查自己 ARP 缓存里面是否有目标主机的 MAC 地址
 	log.Println("Host Start")
 
-	// TODO 没想好要干嘛，不要强行做一些事情破坏设计
+	// Start 这里应该主要是做一些循环监听式的事情
+	for {
+		select {
+		case eFrame := <-utils.RouterToHost2EFChan:
+			log.Println("Host received ethernet frame from router")
+			var arpPacket netdev.ArpResponsePacket
+			err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+			log.Println("Host received arp packet from router, payload:", arpPacket)
+		}
+	}
 }
 
 // 获取 ARP

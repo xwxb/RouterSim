@@ -9,11 +9,20 @@ type IPAddress string
 // 真正要底层实现就是二进制了，干脆用最抽象的
 type SubNetMask string
 
+// 节点类型枚举
 type NodeType string
 
 const (
 	HostType   = "host"
 	RouterType = "router"
+)
+
+// 网络层协议类型枚举
+type NetworkProtocolType string
+
+const (
+	ARPType  = "arp"
+	IPv4Type = "ipv4"
 )
 
 type RouteTable map[netdev.SubnetInfo]IPAddress
