@@ -86,20 +86,20 @@ func (h *Host) getArp(destIP consts.IPAddress, destMAC *consts.MACAddress) {
 	destMAC = &respMAC
 }
 
-// 发送ipv4数据包
-func (h *Host) sendIPv4Packet(ipAddress consts.IPAddress, payload string) {
-	log.Println("Start to Find ARP Cache, curr table: ", h.ArpTable)
-	destMAC, ok := h.ArpTable[consts.Host2IPAddress]
-	if !ok {
-		// 如果没有，则通过 ARP 协议获取目标主机的 MAC 地址
-		h.getArp(consts.Host2IPAddress, &destMAC)
-	}
-
-	// 首先随机生成一个字符串作为 payload
-	pl := utils.GetRandStr(10)
-	packet := h.createIPv4Packet(consts.Host2IPAddress, pl)
-	frame := h.createEthernetFrame(consts.Host2MACAddress, packet)
-}
+//// 发送ipv4数据包
+//func (h *Host) sendIPv4Packet(ipAddress consts.IPAddress, payload string) {
+//	log.Println("Start to Find ARP Cache, curr table: ", h.ArpTable)
+//	destMAC, ok := h.ArpTable[consts.Host2IPAddress]
+//	if !ok {
+//		// 如果没有，则通过 ARP 协议获取目标主机的 MAC 地址
+//		h.getArp(consts.Host2IPAddress, &destMAC)
+//	}
+//
+//	// 首先随机生成一个字符串作为 payload
+//	pl := utils.GetRandStr(10)
+//	packet := h.createIPv4Packet(consts.Host2IPAddress, pl)
+//	frame := h.createEthernetFrame(consts.Host2MACAddress, packet)
+//}
 
 // 目前就考虑这种设计模式，确定主语，然后是把 channel 的实现尽量封装
 // TODO 这里不应该特化，清楚路由器和广播的关系; 这里理论上应该是一个 SendInner ，现在懒得实现了

@@ -51,6 +51,6 @@ func (n *NetDeviceBase) CreateARPRequestPacket(destIPAddress consts.IPAddress) A
 }
 
 func (n *NetDeviceBase) SendOutEthernetFrame(ef *host.EthernetFrame, ip consts.IPAddress) {
-	inChan, _ := utils.GetDirChan(n.IPAddress, ip)
-	inChan <- ef
+	ch := utils.GetDirChan(n.IPAddress, ip)
+	ch <- ef
 }

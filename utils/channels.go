@@ -23,38 +23,35 @@ var (
 type AddrPair struct {
 	Src, Dst any
 }
-type ChanPair struct {
-	In, Out chan *host.EthernetFrame
-}
-type apToCpMap map[*AddrPair]*ChanPair
+type apToEFChanMap map[*AddrPair]chan *host.EthernetFrame
 
-var nagMap apToCpMap
+var dirMap apToEFChanMap
 
 func init() {
-	// host1
-	regNagMap(consts.Host1IPAddress, consts.RouterIPAddress, Host1ToRouterEFChan, RouterToHost1EFChan)
-	// host2
-	regNagMap(consts.Host2IPAddress, consts.RouterIPAddress, Host2ToRouterEFChan, RouterToHost2EFChan)
+	// host1 and router
+	regNagMap(consts.Host1IPAddress, consts.RouterIPAddress, Host1ToRouterEFChan)
+	regNagMap(consts.RouterIPAddress, consts.Host1IPAddress, RouterToHost1EFChan)
+	// host2 and router
+	regNagMap(consts.Host2IPAddress, consts.RouterIPAddress, Host2ToRouterEFChan)
+	regNagMap(consts.RouterIPAddress, consts.Host2IPAddress, RouterToHost2EFChan)
 }
 
 // 这里的设计思想还是 map 和 ip 在物理世界可以唯一确定一条路线，这里就模拟实现
 // 实际目前这里只通过 IP 确定就行了，这里是考虑扩展性的设计
-func regNagMap(from, to any, inChan, outChan chan *host.EthernetFrame) {
+func regNagMap(from, to any, ch chan *host.EthernetFrame) {
 	ipTour := AddrPair{from, to}
-	if nagMap == nil {
-		nagMap = make(apToCpMap)
+	if dirMap == nil {
+		dirMap = make(apToEFChanMap)
 	}
-	nagMap[&ipTour] = &ChanPair{inChan, outChan}
+	dirMap[&ipTour] = ch
 }
 
-func GetDirChan(from, to any) (inChan, outChan chan *host.EthernetFrame) {
+func GetDirChan(from, to any) (ch chan *host.EthernetFrame) {
 	ipTour := AddrPair{from, to}
-	cp, ok := nagMap[&ipTour]
+	ch, ok := dirMap[&ipTour]
 	if !ok {
 		log.Fatal("No such route")
 		return
 	}
-	inChan = cp.In
-	outChan = cp.Out
 	return
 }
