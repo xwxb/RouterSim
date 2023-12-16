@@ -1,8 +1,7 @@
-package utils
+package netdev
 
 import (
 	"github.com/xwxb/routersim/consts"
-	"github.com/xwxb/routersim/netdev/host"
 	"log"
 )
 
@@ -12,18 +11,18 @@ import (
 // 所以暂时的思路还是由出入参来直接唯一获得两个 channel
 var (
 	// host1
-	Host1ToRouterEFChan = make(chan *host.EthernetFrame)
-	RouterToHost1EFChan = make(chan *host.EthernetFrame)
+	Host1ToRouterEFChan = make(chan *EthernetFrame)
+	RouterToHost1EFChan = make(chan *EthernetFrame)
 
 	// host2
-	Host2ToRouterEFChan = make(chan *host.EthernetFrame)
-	RouterToHost2EFChan = make(chan *host.EthernetFrame)
+	Host2ToRouterEFChan = make(chan *EthernetFrame)
+	RouterToHost2EFChan = make(chan *EthernetFrame)
 )
 
 type AddrPair struct {
 	Src, Dst any
 }
-type apToEFChanMap map[*AddrPair]chan *host.EthernetFrame
+type apToEFChanMap map[*AddrPair]chan *EthernetFrame
 
 var dirMap apToEFChanMap
 
@@ -38,7 +37,7 @@ func init() {
 
 // 这里的设计思想还是 map 和 ip 在物理世界可以唯一确定一条路线，这里就模拟实现
 // 实际目前这里只通过 IP 确定就行了，这里是考虑扩展性的设计
-func regNagMap(from, to any, ch chan *host.EthernetFrame) {
+func regNagMap(from, to any, ch chan *EthernetFrame) {
 	ipTour := AddrPair{from, to}
 	if dirMap == nil {
 		dirMap = make(apToEFChanMap)
@@ -46,7 +45,7 @@ func regNagMap(from, to any, ch chan *host.EthernetFrame) {
 	dirMap[&ipTour] = ch
 }
 
-func GetDirChan(from, to any) (ch chan *host.EthernetFrame) {
+func GetDirChan(from, to any) (ch chan *EthernetFrame) {
 	ipTour := AddrPair{from, to}
 	ch, ok := dirMap[&ipTour]
 	if !ok {

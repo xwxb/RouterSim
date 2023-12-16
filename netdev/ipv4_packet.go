@@ -1,4 +1,4 @@
-package host
+package netdev
 
 import (
 	"github.com/xwxb/routersim/consts"
@@ -12,9 +12,9 @@ type IPv4Packet struct {
 }
 
 // 构造IPv4分组的方法
-func (h *Host) createIPv4Packet(destinationIP consts.IPAddress, payload string) *IPv4Packet {
+func (n *NetDeviceBase) createIPv4Packet(destinationIP consts.IPAddress, payload string) *IPv4Packet {
 	return &IPv4Packet{
-		SourceIP:      h.IPAddress,
+		SourceIP:      n.IPAddress,
 		DestinationIP: destinationIP,
 		Payload:       payload,
 	}

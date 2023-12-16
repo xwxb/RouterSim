@@ -2,14 +2,12 @@ package netdev
 
 import (
 	"github.com/xwxb/routersim/consts"
-	"github.com/xwxb/routersim/netdev/host"
-	"github.com/xwxb/routersim/utils"
 )
 
 type NetDevice interface {
 	GetNextHop(consts.IPAddress) consts.IPAddress
 	CreateArpResponsePacket() ArpResponsePacket
-	SendOutEthernetFrame(ef *host.EthernetFrame, ip consts.IPAddress)
+	SendOutEthernetFrame(ef *EthernetFrame, ip consts.IPAddress)
 }
 
 // 这个要重构到 addrs.go 中，暂时没找到最佳实践
@@ -21,7 +19,7 @@ type NetDeviceAddrs struct {
 type NetDeviceBase struct {
 	NetDeviceAddrs
 	ArpTable   ArpTable
-	RouteTable consts.RouteTable
+	RouteTable RouteTable
 }
 
 func (n *NetDeviceBase) GetNextHop(ipAddress consts.IPAddress) (next consts.IPAddress) {
@@ -50,7 +48,7 @@ func (n *NetDeviceBase) CreateARPRequestPacket(destIPAddress consts.IPAddress) A
 	}
 }
 
-func (n *NetDeviceBase) SendOutEthernetFrame(ef *host.EthernetFrame, ip consts.IPAddress) {
-	ch := utils.GetDirChan(n.IPAddress, ip)
+func (n *NetDeviceBase) SendOutEthernetFrame(ef *EthernetFrame, ip consts.IPAddress) {
+	ch := GetDirChan(n.IPAddress, ip)
 	ch <- ef
 }

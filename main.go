@@ -21,20 +21,20 @@ func main() {
 		router.Start()
 	}()
 
-	// 创建主机节点A
-	hostA := host.NewHost(consts.Host1MACAddress, consts.Host1IPAddress)
+	// 创建主机节点1
+	host1 := host.NewHost(consts.Host1MACAddress, consts.Host1IPAddress)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		hostA.Start()
+		host1.Start()
 	}()
 
-	// 创建主机节点B
-	hostB := host.NewHost(consts.Host2MACAddress, consts.Host2IPAddress)
+	// 创建主机节点1
+	host2 := host.NewHost(consts.Host2MACAddress, consts.Host2IPAddress)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		hostB.Start()
+		host2.Start()
 	}()
 
 	// 等待所有goroutine完成

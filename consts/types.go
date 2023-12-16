@@ -1,7 +1,5 @@
 package consts
 
-import "github.com/xwxb/routersim/netdev"
-
 type MACAddress string
 type IPAddress string
 
@@ -29,5 +27,3 @@ const (
 	ARPType  = "arp"
 	IPv4Type = "ipv4"
 )
-
-type RouteTable map[netdev.SubnetInfo]IPAddress
