@@ -32,8 +32,9 @@ func (r *Router) Start() {
 	for {
 		select {
 		case eFrame := <-utils.Host1ToRouterEFChan:
+			log.Println("Router received LAN ethernet frame from host1")
 			if eFrame.PayloadType == consts.ARPType {
-				log.Println("Router received ethernet frame from host1")
+				log.Println("Payload type is ARP")
 
 				var arpPacket netdev.ArpRequestPacket
 				err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
@@ -42,10 +43,30 @@ func (r *Router) Start() {
 					return
 				}
 
-				if arpPacket.DestIP == r.IPAddress {
-					// 这里路由器发现不是发给自己的，继续广播。广播此处不做实现，直接发给主机2
+				if arpPacket.DestIP != r.IPAddress {
+					// 这里路由器发现不是发给自己的，继续用原包广播。广播此处不做实现，直接发给主机2
 					log.Println("dest ip is not router ip, continue broadcast")
-					inChan, _ := utils.GetInAndOutChan(consts.RouterIPAddress, consts.Host2IPAddress)
+					inChan, _ := utils.GetDirChan(consts.RouterIPAddress, consts.Host2IPAddress)
+					inChan <- eFrame
+				}
+			}
+		case eFrame := <-utils.Host2ToRouterEFChan:
+			log.Println("Router received external ethernet frame from host2")
+			if eFrame.PayloadType == consts.ARPType {
+				log.Println("Payload type is ARP")
+
+				var arpPacket netdev.ArpRequestPacket
+				err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
+				if err != nil {
+					log.Fatal(err)
+					return
+				}
+
+				if arpPacket.DestIP != r.IPAddress {
+					// 这里路由器发现不是发给自己的，而且已经标明 MAC 地址是发给主机1的，所以直接发给主机1
+					// TODO 这里也是内部发送不做实现，暂时先这样
+					log.Println("dest ip is not router ip, continue forward")
+					inChan, _ := utils.GetDirChan(consts.RouterIPAddress, consts.Host1IPAddress)
 					inChan <- eFrame
 				}
 			}
@@ -54,11 +75,3 @@ func (r *Router) Start() {
 		}
 	}
 }
-
-//func (router *Router) InsertARPTable(ipAddress, macAddress string) {
-//	router.ARPTable[ipAddress] = macAddress
-//}
-//
-//func (router *Router) InsertRoutingTable(destinationIP, nextHop string) {
-//	router.RoutingTable[destinationIP] = nextHop
-//}

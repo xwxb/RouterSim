@@ -1,12 +1,18 @@
 package netdev
 
-import "github.com/xwxb/routersim/consts"
+import (
+	"github.com/xwxb/routersim/consts"
+	"github.com/xwxb/routersim/netdev/host"
+	"github.com/xwxb/routersim/utils"
+)
 
 type NetDevice interface {
 	GetNextHop(consts.IPAddress) consts.IPAddress
 	CreateArpResponsePacket() ArpResponsePacket
+	SendOutEthernetFrame(ef *host.EthernetFrame, ip consts.IPAddress)
 }
 
+// 这个要重构到 addrs.go 中，暂时没找到最佳实践
 type NetDeviceAddrs struct {
 	IPAddress  consts.IPAddress
 	MACAddress consts.MACAddress
@@ -18,7 +24,7 @@ type NetDeviceBase struct {
 	RouteTable consts.RouteTable
 }
 
-func (n *NetDeviceBase) GetNextHop(ipAddress consts.IPAddress) (next consts.IPAddress, err error) {
+func (n *NetDeviceBase) GetNextHop(ipAddress consts.IPAddress) (next consts.IPAddress) {
 	// 正常路由器的匹配规则，首先遍历 RouteTable 中所有 key（子网），然后匹配传输的参数 ipAddress 是否在 子网内，如果在，则返回 value（下一跳）
 	for subnetInfo, nextHop := range n.RouteTable {
 		if subnetInfo.Contains(ipAddress) {
@@ -42,4 +48,9 @@ func (n *NetDeviceBase) CreateARPRequestPacket(destIPAddress consts.IPAddress) A
 		MACAddress: n.MACAddress,
 		DestIP:     destIPAddress,
 	}
+}
+
+func (n *NetDeviceBase) SendOutEthernetFrame(ef *host.EthernetFrame, ip consts.IPAddress) {
+	inChan, _ := utils.GetDirChan(n.IPAddress, ip)
+	inChan <- ef
 }

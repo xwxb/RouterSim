@@ -47,7 +47,7 @@ func regNagMap(from, to any, inChan, outChan chan *host.EthernetFrame) {
 	nagMap[&ipTour] = &ChanPair{inChan, outChan}
 }
 
-func GetInAndOutChan(from, to any) (inChan, outChan chan *host.EthernetFrame) {
+func GetDirChan(from, to any) (inChan, outChan chan *host.EthernetFrame) {
 	ipTour := AddrPair{from, to}
 	cp, ok := nagMap[&ipTour]
 	if !ok {

@@ -10,8 +10,8 @@ import (
 
 // 定义主机结构体
 type Host struct {
-	Type                 consts.NodeType
-	netdev.NetDeviceBase // 路由表
+	Type                 consts.NodeType // TODO 这个应该抽到 netdev 层
+	netdev.NetDeviceBase                 // 路由表
 }
 
 func NewHost(macAddress, ipAddress string) *Host {
@@ -37,13 +37,25 @@ func (h *Host) Start() {
 		select {
 		case eFrame := <-utils.RouterToHost2EFChan:
 			log.Println("Host received ethernet frame from router")
-			var arpPacket netdev.ArpResponsePacket
-			err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
-			if err != nil {
-				log.Fatal(err)
-				return
+			if eFrame.PayloadType == consts.ARPType {
+				log.Println("Payload type is ARP")
+
+				var arpPacket netdev.ArpRequestPacket
+				err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
+				if err != nil {
+					log.Fatal(err)
+					return
+				}
+
+				if arpPacket.DestIP == h.IPAddress {
+					// 此时主机2发现是发给自己的，所以创建 ARP 响应报文
+					log.Println("dest ip is host2-self ip, return arp response")
+					arpRespPacket := h.CreateArpResponsePacket()
+					frame := h.createEthernetFrame(consts.Host1MACAddress, arpRespPacket)
+					// todo  这里ip应该是主机1，但是暂时没有内部发送的实现，所以先发给路由器
+					h.SendOutEthernetFrame(frame, consts.RouterIPAddress)
+				}
 			}
-			log.Println("Host received arp packet from router, payload:", arpPacket)
 		}
 	}
 }
@@ -54,10 +66,11 @@ func (h *Host) getArp(destIP consts.IPAddress, destMAC *consts.MACAddress) {
 
 	// 通过 ARP 协议获取目标主机的 MAC 地址
 	arpRequestPacket := h.CreateARPRequestPacket(destIP)
-	frame := h.createEthernetFrame(consts.BroadcastMACAddress, arpRequestPacket)
+	frame := h.createEthernetFrame(consts.RouterMACAddress, arpRequestPacket)
 	h.sendToRouter(frame)
 
 	// 接收 ARP 响应报文
+	// TODO 目前这里暂时这样写，感觉这里好像一定程度上是异步的，应该在监听处
 	resp := <-utils.RouterToHost1EFChan
 	respMAC := resp.DestinationMAC
 	log.Println("Get ARP Resp, MAC Address:", respMAC)
@@ -89,6 +102,7 @@ func (h *Host) sendIPv4Packet(ipAddress consts.IPAddress, payload string) {
 }
 
 // 目前就考虑这种设计模式，确定主语，然后是把 channel 的实现尽量封装
+// TODO 这里不应该特化，清楚路由器和广播的关系; 这里理论上应该是一个 SendInner ，现在懒得实现了
 func (h *Host) sendToRouter(frame *EthernetFrame) {
 	utils.Host1ToRouterEFChan <- frame
 }
