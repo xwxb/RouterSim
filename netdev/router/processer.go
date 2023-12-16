@@ -9,7 +9,7 @@ package router
 //// 处理以太网帧的方法
 //func (router *Router) processEthernetFrame(frame *EthernetFrame) {
 //	// 解析以太网帧中的IPv4分组
-//	ipv4PacketBytes, err := hex.DecodeString(frame.Payload)
+//	ipv4PacketBytes, err := hex.DecodeString(frame.PayloadBytes)
 //	if err != nil {
 //		fmt.Println("Error decoding IPv4 packet:", err)
 //		return

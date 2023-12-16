@@ -36,10 +36,10 @@ func (n *NetDeviceBase) CreateArpResponsePacket() ArpResponsePacket {
 }
 
 // 构造 ARP 请求报文
-func (n *NetDeviceBase) CreateARPRequestPacket() ArpRequestPacket {
+func (n *NetDeviceBase) CreateARPRequestPacket(destIPAddress consts.IPAddress) ArpRequestPacket {
 	return ArpRequestPacket{
 		IPAddress:  n.IPAddress,
 		MACAddress: n.MACAddress,
-		DestMAC:    consts.BroadcastMACAddress,
+		destIP:     destIPAddress,
 	}
 }

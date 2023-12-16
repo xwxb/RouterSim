@@ -1,9 +1,11 @@
 package router
 
 import (
+	"encoding/json"
 	"github.com/xwxb/routersim/consts"
 	"github.com/xwxb/routersim/netdev"
 	"github.com/xwxb/routersim/utils"
+	"log"
 )
 
 type Router struct {
@@ -28,9 +30,18 @@ func NewRouter(macAddress, ipAddress string) *Router {
 func (r *Router) Start() {
 	for {
 		select {
-		case _ = <-utils.HostToRouterArpChan:
+		case eFrame := <-utils.Host1ToRouterEFChan:
+			log.Println("Router received ethernet frame from host1")
+
+			var arpPacket netdev.ArpRequestPacket
+			err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+
 			arpResponsePacket := r.CreateArpResponsePacket()
-			utils.RouterToHostArpChan <- arpResponsePacket
+			utils.RouterToHost1EFChan <- arpResponsePacket
 		}
 	}
 }
