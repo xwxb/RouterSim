@@ -20,7 +20,7 @@ var (
 )
 
 type AddrPair struct {
-	Src, Dst any
+	Src, Dst string
 }
 type apToEFChanMap map[AddrPair]chan *EthernetFrame
 
@@ -40,18 +40,22 @@ func init() {
 // 这里的设计思想还是 map 和 ip 在物理世界可以唯一确定一条路线，这里就模拟实现
 // 实际目前这里只通过 IP 确定就行了，这里是考虑扩展性的设计
 func regNagMap(from, to any, ch chan *EthernetFrame) {
-	ipTour := AddrPair{from, to}
+	fromStr := from.(string)
+	toStr := to.(string)
+
+	ipTour := AddrPair{fromStr, toStr}
 	if dirMap == nil {
 		dirMap = make(apToEFChanMap)
 	}
 	dirMap[ipTour] = ch
 }
 
-func GetDirChan(from, to any) (ch chan *EthernetFrame) {
-	ipTour := AddrPair{from, to}
+// perform 实现还是不太优雅
+func GetDirChan(fromStr, toStr string) (ch chan *EthernetFrame) {
+	ipTour := AddrPair{fromStr, toStr}
 	ch, ok := dirMap[ipTour]
 	if !ok {
-		log.Fatal("No such route ", "from ", from, " to ", to)
+		log.Fatal("No such route ", "from ", fromStr, " to ", fromStr, " ipTour ", ipTour)
 		return
 	}
 	return

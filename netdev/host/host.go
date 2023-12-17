@@ -39,30 +39,33 @@ func (h *Host) Start() {
 }
 
 func (h *Host) Receive() {
-	select {
-	case eFrame := <-netdev.RouterToHost2EFChan:
-		log.Println("Host received ethernet frame from router")
-		if eFrame.PayloadType == consts.ARPType {
-			log.Println("Payload type is ARP")
+	if h.IPAddress == consts.Host2IPAddress {
+		select {
+		case eFrame := <-netdev.RouterToHost2EFChan:
+			log.Println("Host received ethernet frame from router")
+			if eFrame.PayloadType == consts.ARPType {
+				log.Println("Payload type is ARP")
 
-			var arpPacket netdev.ArpRequestPacket
-			err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
-			if err != nil {
-				log.Fatal(err)
-				return
+				var arpPacket netdev.ArpRequestPacket
+				err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
+				if err != nil {
+					log.Fatal(err)
+					return
+				}
+				// 问题在这里，被h1收到了
+				if arpPacket.DestIP == h.IPAddress {
+					// 此时主机2发现是发给自己的，所以创建 ARP 响应报文
+					log.Println("dest ip is host2-self ip, return arp response")
+					arpRespPacket := h.CreateArpResponsePacket()
+					frame := h.CreateEthernetFrame(consts.Host1MACAddress, arpRespPacket)
+					// todo  这里ip应该是主机1，但是暂时没有内部发送的实现，所以先发给路由器
+					h.SendOutEthernetFrame(frame, consts.RouterIPAddress)
+				}
 			}
 
-			if arpPacket.DestIP == h.IPAddress {
-				// 此时主机2发现是发给自己的，所以创建 ARP 响应报文
-				log.Println("dest ip is host2-self ip, return arp response")
-				arpRespPacket := h.CreateArpResponsePacket()
-				frame := h.CreateEthernetFrame(consts.Host1MACAddress, arpRespPacket)
-				// todo  这里ip应该是主机1，但是暂时没有内部发送的实现，所以先发给路由器
-				h.SendOutEthernetFrame(frame, consts.RouterIPAddress)
-			}
 		}
-	}
 
+	}
 }
 
 // 获取 ARP
