@@ -32,35 +32,42 @@ func (h *Host) Start() {
 	log.Println("Host Start")
 
 	// Start 这里应该主要是做一些循环监听式的事情
-	for {
-		select {
-		case eFrame := <-netdev.RouterToHost2EFChan:
-			log.Println("Host received ethernet frame from router")
-			if eFrame.PayloadType == consts.ARPType {
-				log.Println("Payload type is ARP")
-
-				var arpPacket netdev.ArpRequestPacket
-				err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
-				if err != nil {
-					log.Fatal(err)
-					return
-				}
-
-				if arpPacket.DestIP == h.IPAddress {
-					// 此时主机2发现是发给自己的，所以创建 ARP 响应报文
-					log.Println("dest ip is host2-self ip, return arp response")
-					arpRespPacket := h.CreateArpResponsePacket()
-					frame := h.CreateEthernetFrame(consts.Host1MACAddress, arpRespPacket)
-					// todo  这里ip应该是主机1，但是暂时没有内部发送的实现，所以先发给路由器
-					h.SendOutEthernetFrame(frame, consts.RouterIPAddress)
-				}
-			}
-		}
+	// TODO 重构成 delayTask 式的
+	for range consts.HostRcvTickerChan {
+		h.Receive()
 	}
 }
 
+func (h *Host) Receive() {
+	select {
+	case eFrame := <-netdev.RouterToHost2EFChan:
+		log.Println("Host received ethernet frame from router")
+		if eFrame.PayloadType == consts.ARPType {
+			log.Println("Payload type is ARP")
+
+			var arpPacket netdev.ArpRequestPacket
+			err := json.Unmarshal(eFrame.PayloadBytes, &arpPacket)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+
+			if arpPacket.DestIP == h.IPAddress {
+				// 此时主机2发现是发给自己的，所以创建 ARP 响应报文
+				log.Println("dest ip is host2-self ip, return arp response")
+				arpRespPacket := h.CreateArpResponsePacket()
+				frame := h.CreateEthernetFrame(consts.Host1MACAddress, arpRespPacket)
+				// todo  这里ip应该是主机1，但是暂时没有内部发送的实现，所以先发给路由器
+				h.SendOutEthernetFrame(frame, consts.RouterIPAddress)
+			}
+		}
+	}
+
+}
+
 // 获取 ARP
-func (h *Host) getArp(destIP consts.IPAddress, destMAC *consts.MACAddress) {
+// hotTODO 应该是私有的，公有测试用
+func (h *Host) GetArp(destIP consts.IPAddress, destMAC *consts.MACAddress) {
 	log.Println("No ARP Cache, Start to Get ARP Resp")
 
 	// 通过 ARP 协议获取目标主机的 MAC 地址
@@ -85,19 +92,20 @@ func (h *Host) getArp(destIP consts.IPAddress, destMAC *consts.MACAddress) {
 	destMAC = &respMAC
 }
 
+//
 //// 发送ipv4数据包
-//func (h *Host) sendIPv4Packet(ipAddress consts.IPAddress, payload string) {
+//func (h *Host) SendIPv4Packet(ipAddress consts.IPAddress, payload string) {
 //	log.Println("Start to Find ARP Cache, curr table: ", h.ArpTable)
 //	destMAC, ok := h.ArpTable[consts.Host2IPAddress]
 //	if !ok {
 //		// 如果没有，则通过 ARP 协议获取目标主机的 MAC 地址
-//		h.getArp(consts.Host2IPAddress, &destMAC)
+//		h.GetArp(consts.Host2IPAddress, &destMAC)
 //	}
 //
 //	// 首先随机生成一个字符串作为 payload
 //	pl := utils.GetRandStr(10)
-//	packet := h.createIPv4Packet(consts.Host2IPAddress, pl)
-//	frame := h.createEthernetFrame(consts.Host2MACAddress, packet)
+//	packet := h.CreateIPv4Packet(consts.Host2IPAddress, pl)
+//	frame := h.CreateEthernetFrame(consts.Host2MACAddress, packet)
 //}
 
 // 目前就考虑这种设计模式，确定主语，然后是把 channel 的实现尽量封装

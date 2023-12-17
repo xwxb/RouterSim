@@ -12,7 +12,7 @@ type IPv4Packet struct {
 }
 
 // 构造IPv4分组的方法
-func (n *NetDeviceBase) createIPv4Packet(destinationIP consts.IPAddress, payload string) *IPv4Packet {
+func (n *NetDeviceBase) CreateIPv4Packet(destinationIP consts.IPAddress, payload string) *IPv4Packet {
 	return &IPv4Packet{
 		SourceIP:      n.IPAddress,
 		DestinationIP: destinationIP,

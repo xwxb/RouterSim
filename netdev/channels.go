@@ -11,18 +11,18 @@ import (
 // 所以暂时的思路还是由出入参来直接唯一获得两个 channel
 var (
 	// host1
-	Host1ToRouterEFChan = make(chan *EthernetFrame)
-	RouterToHost1EFChan = make(chan *EthernetFrame)
+	Host1ToRouterEFChan = make(chan *EthernetFrame, 3)
+	RouterToHost1EFChan = make(chan *EthernetFrame, 3)
 
 	// host2
-	Host2ToRouterEFChan = make(chan *EthernetFrame)
-	RouterToHost2EFChan = make(chan *EthernetFrame)
+	Host2ToRouterEFChan = make(chan *EthernetFrame, 3)
+	RouterToHost2EFChan = make(chan *EthernetFrame, 3)
 )
 
 type AddrPair struct {
 	Src, Dst any
 }
-type apToEFChanMap map[*AddrPair]chan *EthernetFrame
+type apToEFChanMap map[AddrPair]chan *EthernetFrame
 
 var dirMap apToEFChanMap
 
@@ -33,6 +33,8 @@ func init() {
 	// host2 and router
 	regNagMap(consts.Host2IPAddress, consts.RouterIPAddress, Host2ToRouterEFChan)
 	regNagMap(consts.RouterIPAddress, consts.Host2IPAddress, RouterToHost2EFChan)
+
+	log.Println("net channels init complete")
 }
 
 // 这里的设计思想还是 map 和 ip 在物理世界可以唯一确定一条路线，这里就模拟实现
@@ -42,14 +44,14 @@ func regNagMap(from, to any, ch chan *EthernetFrame) {
 	if dirMap == nil {
 		dirMap = make(apToEFChanMap)
 	}
-	dirMap[&ipTour] = ch
+	dirMap[ipTour] = ch
 }
 
 func GetDirChan(from, to any) (ch chan *EthernetFrame) {
 	ipTour := AddrPair{from, to}
-	ch, ok := dirMap[&ipTour]
+	ch, ok := dirMap[ipTour]
 	if !ok {
-		log.Fatal("No such route")
+		log.Fatal("No such route ", "from ", from, " to ", to)
 		return
 	}
 	return
