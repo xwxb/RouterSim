@@ -57,6 +57,7 @@ func (r *Router) Receive() {
 				ch <- eFrame
 			}
 		}
+
 	case eFrame := <-netdev.Host2ToRouterEFChan:
 		log.Println("Router received external ethernet frame from host2")
 		if eFrame.PayloadType == consts.ARPType {

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/xwxb/routersim/consts"
 	"github.com/xwxb/routersim/netdev/host"
 	"github.com/xwxb/routersim/netdev/router"
+	"github.com/xwxb/routersim/utils"
 	"sync"
 )
 
@@ -38,9 +38,7 @@ func main() {
 		host2.Start()
 	}()
 
-	var destMAC consts.MACAddress
-	host1.GetArp(consts.Host2IPAddress, &destMAC)
-	fmt.Println(destMAC)
+	host1.SendIPv4Packet(consts.Host2IPAddress, utils.GetRandStr(10))
 
 	// 等待所有goroutine完成
 	wg.Wait()
