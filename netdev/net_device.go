@@ -33,15 +33,15 @@ func (n *NetDeviceBase) GetNextHop(ipAddress consts.IPAddress) (next consts.IPAd
 	return
 }
 
-func (n *NetDeviceBase) CreateArpResponsePacket() ArpResponsePacket {
-	return ArpResponsePacket{
+func (n *NetDeviceBase) CreateArpResponsePacket() *ArpResponsePacket {
+	return &ArpResponsePacket{
 		MACAddress: n.MACAddress,
 	}
 }
 
 // 构造 ARP 请求报文
-func (n *NetDeviceBase) CreateARPRequestPacket(destIPAddress consts.IPAddress) ArpRequestPacket {
-	return ArpRequestPacket{
+func (n *NetDeviceBase) CreateARPRequestPacket(destIPAddress consts.IPAddress) *ArpRequestPacket {
+	return &ArpRequestPacket{
 		IPAddress:  n.IPAddress,
 		MACAddress: n.MACAddress,
 		DestIP:     destIPAddress,

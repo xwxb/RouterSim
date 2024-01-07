@@ -22,7 +22,7 @@ func NewRouter(macAddress, ipAddress string) *Router {
 				MACAddress: consts.MACAddress(macAddress),
 			},
 			ArpTable:   make(netdev.ArpTable),
-			RouteTable: map[netdev.SubnetInfo]consts.IPAddress{},
+			RouteTable: map[*netdev.SubnetInfo]consts.IPAddress{},
 		},
 	}
 }
@@ -34,6 +34,11 @@ func (r *Router) Start() {
 	for range consts.RouterRcvTickerChan {
 		r.Receive()
 	}
+}
+
+// 手动配置路由表
+func (r *Router) ConfigRouteTable(subnetInfo *netdev.SubnetInfo, nextHop consts.IPAddress) {
+	r.RouteTable[subnetInfo] = nextHop
 }
 
 func (r *Router) Receive() {
@@ -56,8 +61,26 @@ func (r *Router) Receive() {
 				ch := netdev.GetDirChan(consts.RouterIPAddress, consts.Host2IPAddress)
 				ch <- eFrame
 			}
-		}
+		} else if eFrame.PayloadType == consts.IPv4Type {
+			log.Println("Payload type is IPv4")
 
+			var ipv4Packet netdev.IPv4Packet
+			err := json.Unmarshal(eFrame.PayloadBytes, &ipv4Packet)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+
+			// 从路由表中尝试获取下一跳
+			ok := netdev.Host1SubnetInfo.Contains(ipv4Packet.DestinationIP)
+			if !ok {
+				// 没有找到下一跳，转发到默认网关，这里不做实现
+				log.Println("Can't find next hop, go to default gateway route")
+				return
+			}
+			v, _ := r.RouteTable[netdev.Host1SubnetInfo]
+			r.SendOutEthernetFrame(eFrame, v)
+		}
 	case eFrame := <-netdev.Host2ToRouterEFChan:
 		log.Println("Router received external ethernet frame from host2")
 		if eFrame.PayloadType == consts.ARPType {

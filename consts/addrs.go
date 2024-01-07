@@ -14,3 +14,11 @@ const (
 	Host2IPAddress  = "192.168.1.2"
 	RouterIPAddress = "192.168.1.3"
 )
+
+const (
+	//255.255.192.0
+	Host1SubNetMask = "18"
+)
+
+// ? 这里这样做合适吗
+//Host1SubnetInfo = &netdev.SubnetInfo{

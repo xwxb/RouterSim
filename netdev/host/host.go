@@ -22,7 +22,7 @@ func NewHost(macAddress, ipAddress string) *Host {
 				MACAddress: consts.MACAddress(macAddress),
 			},
 			ArpTable:   make(netdev.ArpTable),
-			RouteTable: map[netdev.SubnetInfo]consts.IPAddress{},
+			RouteTable: map[*netdev.SubnetInfo]consts.IPAddress{},
 		},
 	}
 }
@@ -61,6 +61,18 @@ func (h *Host) Receive() {
 					// todo  这里ip应该是主机1，但是暂时没有内部发送的实现，所以先发给路由器
 					h.SendOutEthernetFrame(frame, consts.RouterIPAddress)
 				}
+			} else if eFrame.PayloadType == consts.IPv4Type {
+				log.Println("Payload type is IPv4")
+
+				var ipv4Packet netdev.IPv4Packet
+				err := json.Unmarshal(eFrame.PayloadBytes, &ipv4Packet)
+				if err != nil {
+					log.Fatal(err)
+					return
+				}
+
+				// 接受到 IPv4 数据包，直接打印示意
+				log.Println("Receive IPv4 Packet, src ip:", ipv4Packet.SourceIP, "payload:", ipv4Packet.Payload)
 			}
 
 		}

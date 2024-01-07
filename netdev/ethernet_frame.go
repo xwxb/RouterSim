@@ -25,9 +25,9 @@ func (n *NetDeviceBase) CreateEthernetFrame(destinationMAC consts.MACAddress, pa
 
 	var typ consts.NetworkProtocolType
 	switch payload.(type) {
-	case ArpRequestPacket, ArpResponsePacket:
+	case *ArpRequestPacket, *ArpResponsePacket:
 		typ = consts.ARPType
-	case IPv4Packet:
+	case *IPv4Packet:
 		typ = consts.IPv4Type
 	}
 

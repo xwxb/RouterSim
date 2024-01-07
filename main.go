@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/xwxb/routersim/consts"
+	"github.com/xwxb/routersim/netdev"
 	"github.com/xwxb/routersim/netdev/host"
 	"github.com/xwxb/routersim/netdev/router"
 	"github.com/xwxb/routersim/utils"
@@ -38,6 +39,7 @@ func main() {
 		host2.Start()
 	}()
 
+	rt.ConfigRouteTable(netdev.Host1SubnetInfo, consts.Host2IPAddress)
 	host1.SendIPv4Packet(consts.Host2IPAddress, utils.GetRandStr(10))
 
 	// 等待所有goroutine完成

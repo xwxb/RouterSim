@@ -51,6 +51,7 @@ func regNagMap(from, to any, ch chan *EthernetFrame) {
 }
 
 // perform 实现还是不太优雅
+// TODO 这里应该没必要换成 string
 func GetDirChan(fromStr, toStr string) (ch chan *EthernetFrame) {
 	ipTour := AddrPair{fromStr, toStr}
 	ch, ok := dirMap[ipTour]
