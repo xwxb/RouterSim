@@ -26,4 +26,13 @@ type NetworkProtocolType string
 const (
 	ARPType  = "arp"
 	IPv4Type = "ipv4"
+	// 所以枚举类型命名的最佳实践应该是有前缀的，因为它没有go内置的限制。同时，枚举类型名也倾向于具体一点
+	ICMPType = "icmp"
+)
+
+type ICMPPacketType string
+
+const (
+	ICMPTypeEchoReply   ICMPPacketType = "echo-reply"
+	ICMPTypeEchoRequest ICMPPacketType = "echo-request"
 )

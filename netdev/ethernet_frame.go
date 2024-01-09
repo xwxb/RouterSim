@@ -29,6 +29,8 @@ func (n *NetDeviceBase) CreateEthernetFrame(destinationMAC consts.MACAddress, pa
 		typ = consts.ARPType
 	case *IPv4Packet:
 		typ = consts.IPv4Type
+	case *ICMPPacket:
+		typ = consts.ICMPType
 	}
 
 	return &EthernetFrame{

@@ -41,6 +41,7 @@ func main() {
 
 	rt.ConfigRouteTable(netdev.Host1SubnetInfo, consts.Host2IPAddress)
 	host1.SendIPv4Packet(consts.Host2IPAddress, utils.GetRandStr(10))
+	host1.SendICMPRequestPacket(consts.Host2IPAddress, consts.ICMPTypeEchoRequest)
 
 	// 等待所有goroutine完成
 	wg.Wait()
